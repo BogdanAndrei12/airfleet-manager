@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const auth = require('../middleware/auth');
 const {
   getAllAircraft,
   getAircraftById,
@@ -8,10 +9,13 @@ const {
   deleteAircraft
 } = require('../controllers/aircraftController');
 
+// Public routes
 router.get('/', getAllAircraft);
 router.get('/:id', getAircraftById);
-router.post('/', createAircraft);
-router.put('/:id', updateAircraft);
-router.delete('/:id', deleteAircraft);
+
+// Protected routes
+router.post('/', auth, createAircraft);
+router.put('/:id', auth, updateAircraft);
+router.delete('/:id', auth, deleteAircraft);
 
 module.exports = router;

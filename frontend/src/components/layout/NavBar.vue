@@ -9,6 +9,7 @@
         <li><router-link to="/">Home</router-link></li>
         <li><router-link to="/aircraft">Aircraft</router-link></li>
         <li><router-link to="/flights">Flights</router-link></li>
+        <li><router-link to="/login">Login</router-link></li>
       </ul>
     </div>
   </nav>
