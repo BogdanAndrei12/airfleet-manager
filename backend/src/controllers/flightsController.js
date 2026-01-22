@@ -58,8 +58,34 @@ const getFlightById = async (req, res) => {
 // Create flight
 const createFlight = async (req, res) => {
   try {
+    // Validari simple
+    const { flightNumber, aircraftId, route, schedule, status } = req.body;
+    
+    if (!flightNumber || !aircraftId) {
+      return res.status(400).json({
+        success: false,
+        error: 'Flight number and aircraft ID are required'
+      });
+    }
+    
+    if (!route || !route.departure || !route.arrival) {
+      return res.status(400).json({
+        success: false,
+        error: 'Route with departure and arrival is required'
+      });
+    }
+    
     const flightData = {
-      ...req.body,
+      flightNumber,
+      aircraftId,
+      route: {
+        departure: route.departure,
+        arrival: route.arrival,
+        distance: route.distance || '',
+        duration: route.duration || ''
+      },
+      schedule: schedule || {},
+      status: status || 'Scheduled',
       timestamps: {
         created: new Date().toISOString(),
         updated: new Date().toISOString()
@@ -86,6 +112,16 @@ const createFlight = async (req, res) => {
 // Update flight
 const updateFlight = async (req, res) => {
   try {
+    const { flightNumber, status } = req.body;
+    
+    // Validare pentru update
+    if (flightNumber === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Flight number cannot be empty'
+      });
+    }
+    
     const flightData = {
       ...req.body,
       'timestamps.updated': new Date().toISOString()
@@ -101,6 +137,12 @@ const updateFlight = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error.code === 'not-found') {
+      return res.status(404).json({
+        success: false,
+        error: 'Flight not found'
+      });
+    }
     res.status(500).json({
       success: false,
       error: error.message

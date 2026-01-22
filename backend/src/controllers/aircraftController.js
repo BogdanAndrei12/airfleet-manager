@@ -58,8 +58,34 @@ const getAircraftById = async (req, res) => {
 // Create aircraft
 const createAircraft = async (req, res) => {
   try {
+    // Validari simple
+    const { registration, model, manufacturer, airline, specifications, status } = req.body;
+    
+    if (!registration || !model || !manufacturer) {
+      return res.status(400).json({
+        success: false,
+        error: 'Registration, model, and manufacturer are required'
+      });
+    }
+    
+    if (!airline || !airline.name) {
+      return res.status(400).json({
+        success: false,
+        error: 'Airline name is required'
+      });
+    }
+    
     const aircraftData = {
-      ...req.body,
+      registration,
+      model,
+      manufacturer,
+      airline: {
+        name: airline.name,
+        iataCode: airline.iataCode || '',
+        country: airline.country || ''
+      },
+      specifications: specifications || {},
+      status: status || { operational: true },
       metadata: {
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
@@ -86,6 +112,16 @@ const createAircraft = async (req, res) => {
 // Update aircraft
 const updateAircraft = async (req, res) => {
   try {
+    const { registration, model, manufacturer } = req.body;
+    
+    // Validare pentru update
+    if (registration === '' || model === '' || manufacturer === '') {
+      return res.status(400).json({
+        success: false,
+        error: 'Fields cannot be empty'
+      });
+    }
+    
     const aircraftData = {
       ...req.body,
       'metadata.updatedAt': new Date().toISOString()
@@ -101,6 +137,12 @@ const updateAircraft = async (req, res) => {
       }
     });
   } catch (error) {
+    if (error.code === 'not-found') {
+      return res.status(404).json({
+        success: false,
+        error: 'Aircraft not found'
+      });
+    }
     res.status(500).json({
       success: false,
       error: error.message
