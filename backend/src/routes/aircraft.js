@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const auth = require('../middleware/auth');
+// const auth = require('../middleware/auth'); // ← Comentează
 const {
   getAllAircraft,
   getAircraftById,
@@ -13,9 +13,9 @@ const {
 router.get('/', getAllAircraft);
 router.get('/:id', getAircraftById);
 
-// Protected routes
-router.post('/', auth, createAircraft);
-router.put('/:id', auth, updateAircraft);
-router.delete('/:id', auth, deleteAircraft);
+// Protected routes - FĂRĂ auth pentru demo
+router.post('/', createAircraft);  // ← Fără auth
+router.put('/:id', updateAircraft);  // ← Fără auth
+router.delete('/:id', deleteAircraft);  // ← Fără auth
 
 module.exports = router;
