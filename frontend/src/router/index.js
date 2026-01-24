@@ -1,4 +1,5 @@
 import { createRouter, createWebHistory } from 'vue-router'
+import { auth } from '../config/firebase'
 import Home from '../views/Home.vue'
 import AircraftList from '../views/AircraftList.vue'
 import FlightsList from '../views/FlightsList.vue'
@@ -16,12 +17,14 @@ const router = createRouter({
     {
       path: '/aircraft',
       name: 'aircraft',
-      component: AircraftList
+      component: AircraftList,
+      meta: { requiresAuth: true }
     },
     {
       path: '/flights',
       name: 'flights',
-      component: FlightsList
+      component: FlightsList,
+      meta: { requiresAuth: true }
     },
     {
       path: '/login',
@@ -35,5 +38,17 @@ const router = createRouter({
     }
   ]
 })
+
+// Navigation guard
+router.beforeEach((to, from, next) => {
+  const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
+  const currentUser = auth.currentUser;
+
+  if (requiresAuth && !currentUser) {
+    next('/login');
+  } else {
+    next();
+  }
+});
 
 export default router

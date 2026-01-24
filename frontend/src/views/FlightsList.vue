@@ -84,6 +84,26 @@ export default {
     });
     
     const handleCreate = async () => {
+      if (!form.value.flightNumber.trim()) {
+        alert('Flight number is required');
+        return;
+      }
+      
+      if (!form.value.aircraftId.trim()) {
+        alert('Aircraft ID is required');
+        return;
+      }
+      
+      if (!form.value.departureCode.trim() || !form.value.arrivalCode.trim()) {
+        alert('Departure and arrival codes are required');
+        return;
+      }
+      
+      if (form.value.departureCode.length !== 3 || form.value.arrivalCode.length !== 3) {
+        alert('Airport codes must be 3 characters (e.g., OTP, LHR)');
+        return;
+      }
+      
       try {
         await store.createFlight({
           flightNumber: form.value.flightNumber,
@@ -97,7 +117,8 @@ export default {
         });
         closeForm();
       } catch (error) {
-        alert('Error: ' + error.message);
+        const errorMsg = error.response?.data?.error || error.message;
+        alert('Error: ' + errorMsg);
       }
     };
     

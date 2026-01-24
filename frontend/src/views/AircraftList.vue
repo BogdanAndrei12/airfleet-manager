@@ -80,6 +80,31 @@ export default {
     });
     
     const handleCreate = async () => {
+      if (!form.value.registration.trim()) {
+        alert('Registration is required');
+        return;
+      }
+      
+      if (form.value.registration.length < 3) {
+        alert('Registration must be at least 3 characters');
+        return;
+      }
+      
+      if (!form.value.model.trim()) {
+        alert('Model is required');
+        return;
+      }
+      
+      if (!form.value.manufacturer.trim()) {
+        alert('Manufacturer is required');
+        return;
+      }
+      
+      if (!form.value.airlineName.trim()) {
+        alert('Airline name is required');
+        return;
+      }
+      
       try {
         await store.createAircraft({
           registration: form.value.registration,
@@ -95,7 +120,8 @@ export default {
         });
         closeForm();
       } catch (error) {
-        alert('Error: ' + error.message);
+        const errorMsg = error.response?.data?.error || error.message;
+        alert('Error: ' + errorMsg);
       }
     };
     
@@ -203,6 +229,7 @@ th {
   display: flex;
   justify-content: center;
   align-items: center;
+  z-index: 1000;
 }
 
 .modal-content {
