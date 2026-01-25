@@ -33,6 +33,7 @@
               </span>
             </td>
             <td>
+              <button @click="viewDetails(aircraft)" class="btn-view">View</button>
               <button @click="deleteAircraft(aircraft.id)" class="btn-delete">Delete</button>
             </td>
           </tr>
@@ -40,6 +41,7 @@
       </table>
     </div>
     
+    <!-- Modal CREATE -->
     <div v-if="showForm" class="modal">
       <div class="modal-content">
         <h2>Add New Aircraft</h2>
@@ -56,6 +58,122 @@
         </form>
       </div>
     </div>
+    
+    <!-- Modal DETAILS -->
+    <div v-if="selectedAircraft" class="modal">
+      <div class="modal-content modal-details">
+        <div class="details-header">
+          <h2>{{ selectedAircraft.registration }}</h2>
+          <button @click="selectedAircraft = null" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="details-body">
+          <div class="detail-section">
+            <h3>Basic Information</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="label">Registration:</span>
+                <span class="value">{{ selectedAircraft.registration }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Model:</span>
+                <span class="value">{{ selectedAircraft.model }}</span>
+              </div>
+              <div class="detail-item">
+                <span class="label">Manufacturer:</span>
+                <span class="value">{{ selectedAircraft.manufacturer }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section" v-if="selectedAircraft.airline">
+            <h3>Airline</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="label">Name:</span>
+                <span class="value">{{ selectedAircraft.airline.name }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.airline.iataCode">
+                <span class="label">IATA Code:</span>
+                <span class="value">{{ selectedAircraft.airline.iataCode }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.airline.country">
+                <span class="label">Country:</span>
+                <span class="value">{{ selectedAircraft.airline.country }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section" v-if="selectedAircraft.specifications">
+            <h3>Specifications</h3>
+            <div class="detail-grid">
+              <div class="detail-item" v-if="selectedAircraft.specifications.passengers">
+                <span class="label">Passengers:</span>
+                <span class="value">{{ selectedAircraft.specifications.passengers }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.specifications.maxSpeed">
+                <span class="label">Max Speed:</span>
+                <span class="value">{{ selectedAircraft.specifications.maxSpeed }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.specifications.range">
+                <span class="label">Range:</span>
+                <span class="value">{{ selectedAircraft.specifications.range }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.specifications.engines">
+                <span class="label">Engines:</span>
+                <span class="value">{{ selectedAircraft.specifications.engines }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.specifications.wingspan">
+                <span class="label">Wingspan:</span>
+                <span class="value">{{ selectedAircraft.specifications.wingspan }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.specifications.length">
+                <span class="label">Length:</span>
+                <span class="value">{{ selectedAircraft.specifications.length }}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section" v-if="selectedAircraft.status">
+            <h3>Status</h3>
+            <div class="detail-grid">
+              <div class="detail-item">
+                <span class="label">Operational:</span>
+                <span :class="selectedAircraft.status.operational ? 'value status-yes' : 'value status-no'">
+                  {{ selectedAircraft.status.operational ? 'Yes' : 'No' }}
+                </span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.status.location">
+                <span class="label">Location:</span>
+                <span class="value">{{ selectedAircraft.status.location }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.status.flightHours">
+                <span class="label">Flight Hours:</span>
+                <span class="value">{{ selectedAircraft.status.flightHours.toLocaleString() }} hrs</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="detail-section" v-if="selectedAircraft.metadata">
+            <h3>Metadata</h3>
+            <div class="detail-grid">
+              <div class="detail-item" v-if="selectedAircraft.metadata.createdAt">
+                <span class="label">Created:</span>
+                <span class="value">{{ formatDate(selectedAircraft.metadata.createdAt) }}</span>
+              </div>
+              <div class="detail-item" v-if="selectedAircraft.metadata.updatedAt">
+                <span class="label">Last Updated:</span>
+                <span class="value">{{ formatDate(selectedAircraft.metadata.updatedAt) }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <div class="details-footer">
+          <button @click="selectedAircraft = null" class="btn-secondary">Close</button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -68,6 +186,7 @@ export default {
   setup() {
     const store = useAircraftStore();
     const showForm = ref(false);
+    const selectedAircraft = ref(null);
     const form = ref({
       registration: '',
       model: '',
@@ -135,6 +254,10 @@ export default {
       }
     };
     
+    const viewDetails = (aircraft) => {
+      selectedAircraft.value = aircraft;
+    };
+    
     const closeForm = () => {
       showForm.value = false;
       form.value = {
@@ -145,15 +268,30 @@ export default {
       };
     };
     
+    const formatDate = (dateString) => {
+      if (!dateString) return 'N/A';
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+      });
+    };
+    
     return {
       aircraftList: computed(() => store.aircraft),
       loading: computed(() => store.loading),
       error: computed(() => store.error),
       showForm,
+      selectedAircraft,
       form,
       handleCreate,
       deleteAircraft,
-      closeForm
+      viewDetails,
+      closeForm,
+      formatDate
     };
   }
 }
@@ -210,6 +348,16 @@ th {
   cursor: pointer;
 }
 
+.btn-view {
+  background: #007bff;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 4px;
+  cursor: pointer;
+  margin-right: 0.5rem;
+}
+
 .btn-delete {
   background: #dc3545;
   color: white;
@@ -230,6 +378,8 @@ th {
   justify-content: center;
   align-items: center;
   z-index: 1000;
+  overflow-y: auto;
+  padding: 2rem 0;
 }
 
 .modal-content {
@@ -238,6 +388,95 @@ th {
   border-radius: 8px;
   width: 90%;
   max-width: 500px;
+  margin: auto;
+}
+
+.modal-details {
+  max-width: 700px;
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.details-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #f0f0f0;
+}
+
+.details-header h2 {
+  margin: 0;
+  color: #2c3e50;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 2rem;
+  cursor: pointer;
+  color: #666;
+  line-height: 1;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+}
+
+.close-btn:hover {
+  color: #000;
+}
+
+.details-body {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.detail-section h3 {
+  color: #2c3e50;
+  margin-bottom: 1rem;
+  font-size: 1.1rem;
+  border-bottom: 1px solid #e0e0e0;
+  padding-bottom: 0.5rem;
+}
+
+.detail-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.detail-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.label {
+  font-size: 0.85rem;
+  color: #666;
+  font-weight: 500;
+}
+
+.value {
+  color: #2c3e50;
+  font-weight: 600;
+}
+
+.status-yes {
+  color: #28a745;
+}
+
+.status-no {
+  color: #dc3545;
+}
+
+.details-footer {
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 2px solid #f0f0f0;
+  text-align: right;
 }
 
 form {
